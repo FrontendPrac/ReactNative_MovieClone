@@ -1,39 +1,88 @@
-import { View, Text, Image } from "react-native";
+import { Text, useColorScheme } from "react-native";
 import styled from "@emotion/native";
+import { DARK_COLOR, WHITE_COLOR } from "../../colors";
+import { StyleSheet } from "react-native";
+import Swiper from "react-native-swiper";
+import { LinearGradient } from "expo-linear-gradient";
+import { getImgPath, SCREEN_HEIGHT } from "../../util";
 
-const Recommend = () => {
+const Recommend = ({ recommed }) => {
+  const isDark = useColorScheme() === "dark";
+
   return (
-    <StRecommendContainer>
-      <StImage source={require("../../assets/movie.jpeg")} />
-      <Text>올빼미</Text>
-      <Text>⭐8.74/10</Text>
-      <StText numberOfLines={5} ellipsizeMode="tail">
-        > 맹인이지만 뛰어난 침술 실력을 지닌 ‘경수’는 어의 ‘이형익’에게 그
-        재주를 인정받아 궁으로 들어간다. 그 무렵, 청에 인질로 끌려갔던
-        ‘소현세자’가 8년 만에 귀국하고, ‘인조’는 아들을 향한 반가움도 잠시 정체
-        모를 불안감에 휩싸인다. 그러던 어느 밤, 어둠 속에서는 희미하게 볼 수
-        있는 ‘경수’가 ‘소현세자’의 죽음을 목격하게 되고 진실을 알리려는 찰나 더
-        큰 비밀과 음모가 드러나며 목숨마저 위태로운 상황에 빠진다. 아들의 죽음
-        후 ‘인조’의 불안감은 광기로 변하여 폭주하기 시작하고 세자의 죽음을
-        목격한 ‘경수’로 인해 관련된 인물들의 민낯이 서서히 드러나게 되는데...
-      </StText>
-    </StRecommendContainer>
+    // 슬라이더 라이브러리
+    <Swiper height="100%" showsPagination={false} autoplay loop>
+      {recommed.map((movie) => (
+        <StRecommendContainer key={movie.id}>
+          <StBackgroundImage
+            source={{
+              uri: getImgPath(movie.poster_path),
+            }}
+            style={StyleSheet.absoluteFill}
+          />
+          <LinearGradient
+            colors={["transparent", "black"]}
+            style={StyleSheet.absoluteFill}
+          />
+          <Row>
+            <Poster
+              source={{
+                uri: getImgPath(movie.backdrop_path),
+              }}
+            />
+            <Column>
+              <Text style={{ color: isDark ? WHITE_COLOR : DARK_COLOR }}>
+                {movie.title}
+              </Text>
+              <Text style={{ color: isDark ? WHITE_COLOR : DARK_COLOR }}>
+                ⭐{movie.vote_average}/10
+              </Text>
+              <Text
+                numberOfLines={5}
+                ellipsizeMode="tail"
+                style={{ color: isDark ? WHITE_COLOR : DARK_COLOR }}
+              >
+                {movie.overview}
+              </Text>
+            </Column>
+          </Row>
+        </StRecommendContainer>
+      ))}
+    </Swiper>
   );
 };
 
 export default Recommend;
 
-const StRecommendContainer = styled.View`
+const StRecommendContainer = styled.TouchableOpacity`
+  /* flex: 1;
+  justify-content: flex-end; */
   margin-bottom: 20px;
+  height: ${SCREEN_HEIGHT / 2 + "px"};
 `;
 
-const StImage = styled.Image`
+const StBackgroundImage = styled.Image`
   width: 100%;
-  height: 500px;
-  object-fit: cover;
+  height: 100%;
+  border-radius: 10px;
 `;
 
-// Todo: 다크모드 폰트 색상 적용
-const StText = styled.Text`
-  color: ${(props) => props.theme.title};
+const Row = styled.TouchableOpacity`
+  flex: 1;
+  flex-direction: row;
+  align-items: flex-end;
+`;
+
+const Poster = styled.Image`
+  width: 100px;
+  height: 160px;
+  margin-left: 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+`;
+
+const Column = styled.View`
+  width: 65%;
+  margin-left: 10px;
+  margin-bottom: 10px;
 `;

@@ -6,6 +6,7 @@ const Stack = createNativeStackNavigator();
 
 const Root = () => {
   return (
+    // Tab, Stack 네비게이션 연결하기
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Tabs" component={Tabs} />
       <Stack.Screen name="Stacks" component={Stacks} />
