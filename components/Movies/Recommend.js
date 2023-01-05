@@ -5,14 +5,17 @@ import { StyleSheet } from "react-native";
 import Swiper from "react-native-swiper";
 import { LinearGradient } from "expo-linear-gradient";
 import { getImgPath, SCREEN_HEIGHT } from "../../util";
+import { useNavigation } from "@react-navigation/native";
 
-const Recommend = ({ recommed }) => {
+const Recommend = ({ recommedData }) => {
+  const { navigate } = useNavigation();
+
   const isDark = useColorScheme() === "dark";
 
   return (
     // 슬라이더 라이브러리
     <Swiper height="100%" showsPagination={false} autoplay loop>
-      {recommed.map((movie) => (
+      {recommedData.results.map((movie) => (
         <StRecommendContainer key={movie.id}>
           <StBackgroundImage
             source={{
@@ -24,23 +27,29 @@ const Recommend = ({ recommed }) => {
             colors={["transparent", "black"]}
             style={StyleSheet.absoluteFill}
           />
-          <Row>
+          {/* navigate : navigator, screen, params */}
+          <Row
+            onPress={() =>
+              navigate("Stacks", {
+                screen: "Detail",
+                params: { movieId: movie.id },
+              })
+            }
+          >
             <Poster
               source={{
                 uri: getImgPath(movie.backdrop_path),
               }}
             />
             <Column>
-              <Text style={{ color: isDark ? WHITE_COLOR : DARK_COLOR }}>
-                {movie.title}
-              </Text>
+              <Text style={{ color: WHITE_COLOR }}>{movie.title}</Text>
               <Text style={{ color: isDark ? WHITE_COLOR : DARK_COLOR }}>
                 ⭐{movie.vote_average}/10
               </Text>
               <Text
                 numberOfLines={5}
                 ellipsizeMode="tail"
-                style={{ color: isDark ? WHITE_COLOR : DARK_COLOR }}
+                style={{ color: WHITE_COLOR }}
               >
                 {movie.overview}
               </Text>

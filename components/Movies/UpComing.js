@@ -1,20 +1,38 @@
-import { View, Text, useColorScheme } from "react-native";
+import { View, Text, useColorScheme, Alert } from "react-native";
 import styled from "@emotion/native";
 import { DARK_COLOR, WHITE_COLOR } from "../../colors";
 import { getImgPath } from "../../util";
+import { useNavigation } from "@react-navigation/native";
 
-const UpComing = ({ upComing }) => {
+const UpComing = ({ upComingData }) => {
+  const { navigate } = useNavigation();
+
   const isDark = useColorScheme() === "dark";
 
   return (
     <StUpComingContainer>
       <View>
-        <StTitle style={{ color: isDark ? WHITE_COLOR : DARK_COLOR }}>
+        <StTitle
+          style={{
+            color: isDark ? WHITE_COLOR : DARK_COLOR,
+            marginBottom: 20,
+            fontSize: 30,
+          }}
+        >
           개봉예정
         </StTitle>
       </View>
-      {upComing.map((movie) => (
-        <StContentBox key={movie.id}>
+      {/* navigate : navigator, screen, params */}
+      {upComingData.results.map((movie) => (
+        <StContentBox
+          key={movie.id}
+          onPress={() =>
+            navigate("Stacks", {
+              screen: "Detail",
+              params: { movieId: movie.id },
+            })
+          }
+        >
           <StImageBox>
             <StImage source={{ uri: getImgPath(movie.poster_path) }} />
           </StImageBox>

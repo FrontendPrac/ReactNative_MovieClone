@@ -12,3 +12,8 @@ export const getImgPath = (path) => {
 // BASE URL, API KEY
 export const BASE_URL = "https://api.themoviedb.org/3/movie";
 export const API_KEY = "107e43947a000a55344da6b74ae71a48";
+
+// 정규식
+export const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+export const pwRegex =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
