@@ -5,6 +5,8 @@ import { DARK_COLOR, WHITE_COLOR } from "../colors";
 import { authService } from "../firebase";
 import Detail from "../screen/Stacks/Detail";
 import Login from "../screen/Stacks/Login";
+import Review from "../screen/Stacks/Review";
+import ReviewEdit from "../screen/Stacks/ReviewEdit";
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +53,8 @@ const Stacks = ({ navigation: { goBack, navigate } }) => {
     >
       <Stack.Screen name="Detail" component={Detail} />
       <Stack.Screen name="Login" component={Login} />
+      <Stack.Screen name="Review" component={Review} />
+      <Stack.Screen name="ReviewEdit" component={ReviewEdit} />
     </Stack.Navigator>
   );
 };

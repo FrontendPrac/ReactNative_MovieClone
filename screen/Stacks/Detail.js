@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   Linking,
   StyleSheet,
   useColorScheme,
@@ -13,7 +14,16 @@ import { API_KEY, BASE_URL, getImgPath, SCREEN_HEIGHT } from "../../util";
 import { DARK_COLOR, WHITE_COLOR } from "../../colors";
 import { useQuery } from "react-query";
 import { getDetail } from "../../api";
-import { authService } from "../../firebase";
+import { authService, dbService } from "../../firebase";
+import ReviewModal from "../../components/My/ReviewModal";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import ReviewCard from "../../components/My/ReviewCard";
 
 // 매개변수 받기
 const Detail = ({
@@ -25,6 +35,10 @@ const Detail = ({
   // server state
   // const [data, setData] = useState(null);
   // const [isLoading, setIsLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
+
+  // client state
+  const [isOpenModal, setIsOpenModal] = useState(false);
 
   const isDark = useColorScheme() === "dark";
 
@@ -47,7 +61,25 @@ const Detail = ({
       navigate("Login");
       return;
     }
+    setIsOpenModal(true);
   };
+
+  // 데이터 조회하기
+  useEffect(() => {
+    const q = query(
+      collection(dbService, "reviews"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const newReviews = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setReviews(newReviews);
+    });
+    return unsubscribe;
+  }, []);
 
   const isLoading = isLoadingDD;
 
@@ -102,6 +134,28 @@ const Detail = ({
           Add Review
         </TempText>
       </AddReview>
+      <FlatList
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          marginBottom: 50,
+          justifyContent: "flex-start",
+        }}
+        keyExtractor={(item) => item.id}
+        horizontal
+        data={reviews}
+        ItemSeparatorComponent={HSeprator}
+        renderItem={({ item }) => {
+          if (item.movieId === movieId) {
+            return <ReviewCard review={item} />;
+          }
+        }}
+      />
+      <ReviewModal
+        movieId={movieId}
+        isOpenModal={isOpenModal}
+        setIsOpenModal={setIsOpenModal}
+      />
     </Container>
   );
 };
@@ -178,4 +232,8 @@ const AddReview = styled.TouchableOpacity`
 
 const TempText = styled.Text`
   font-size: 20px;
+`;
+
+const HSeprator = styled.View`
+  width: 10px;
 `;
