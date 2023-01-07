@@ -1,3 +1,5 @@
+import { deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { dbService } from "./firebase";
 import { API_KEY, BASE_URL } from "./util";
 
 // 추천 데이터 받아오는 함수
@@ -27,6 +29,16 @@ export const getDetail = (params) => {
   return fetch(
     `${BASE_URL}/${movieId}?api_key=${API_KEY}&language=en-US&append_to_response=videos`
   ).then((res) => res.json());
+};
+
+// 데이터베이스의 데이터를 수정하는 함수
+export const editReview = async ({ reviewId, editingObj }) => {
+  await updateDoc(doc(dbService, "reviews", reviewId), editingObj);
+};
+
+// 데이터베이스의 데이터를 삭제삭제하는 함수
+export const deleteReview = async (reviewId) => {
+  await deleteDoc(doc(dbService, "reviews", reviewId));
 };
 
 /////////// use query 사용하기 이전의 코드 ///////////

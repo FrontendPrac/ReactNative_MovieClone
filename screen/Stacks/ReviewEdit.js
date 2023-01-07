@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import styled from "@emotion/native";
 import { Rating } from "react-native-ratings";
-import { useColorScheme, View } from "react-native";
+import { Alert, AsyncStorage, useColorScheme, View } from "react-native";
 import { DARK_COLOR, WHITE_COLOR } from "../../colors";
+import { useMutation } from "react-query";
+import { deleteReview, editReview } from "../../api";
+import { async } from "@firebase/util";
 
 const ReviewEdit = ({
   navigation,
@@ -18,20 +21,113 @@ const ReviewEdit = ({
   const [newContent, setNewContent] = useState("");
   const [ratings, setRatings] = useState(0);
 
-  // 편집 이후 로직
-  const onEditDone = () => {
-    if(!newTitle && !newContent && !ratings) {
-      alert("수정한 부분이 없습니데이")
+  // reviseReview : useMutation - 데이터베이스 데이터에 변경을 가할때 사용
+  const { isLoading: isLoadingEditing, mutate: reviseReview } = useMutation(
+    ["editReview", review.id],
+    (body) => editReview(body),
+    {
+      onSuccess: () => {
+        console.log("수정 성공");
+      },
+      onError: (err) => {
+        console.log("수정 에러");
+      },
     }
+  );
+
+  // removeReview : useMutation - 데이터베이스 데이터에 변경을 가할때 사용
+  const { isLoading: isLoadingDeleting, mutate: removeReview } = useMutation(
+    ["deleteReview", review.id],
+    (body) => deleteReview(body),
+    {
+      onSuccess: () => {
+        console.log("삭제 성공");
+      },
+      onError: (err) => {
+        console.log("삭제 에러");
+      },
+    }
+  );
+
+  // 편집 버튼 로직
+  const onEditDone = () => {
+    if (!newTitle && !newContent && !ratings) {
+      alert("수정한 부분이 없습니데이");
+    }
+
+    // 입력 값이 3개 중 하나라도 있으면 patch하도록 객체 구성
+    let editingObj = {};
+
+    if (newTitle) {
+      Object.assign(editingObj, { title: newTitle });
+    }
+    if (newContent) {
+      Object.assign(editingObj, { content: newContent });
+    }
+    if (ratings) {
+      Object.assign(editingObj, { rating: ratings });
+    }
+
+    // console.log(editingObj);
+
+    Alert.alert("리뷰 수정", "리뷰를 수정하시겠습니꺼?", [
+      { text: "취소", style: "destructive" },
+      {
+        text: "수정",
+        onPress: async () => {
+          try {
+            await reviseReview({ reviewId: review.id, editingObj });
+            setNewTitle("");
+            setNewContent("");
+            setRatings(0);
+            if (from === "Detail") {
+              navigation.reset({
+                index: 1,
+                routes: [
+                  { name: "Detail", params: { movieId: review.movieId } },
+                  {
+                    name: "Review",
+                    params: { review: { ...review, ...editingObj }, from },
+                  },
+                ],
+              });
+            } else if (from === "My") {
+              navigation.reset({
+                routes: [{ name: "Tabs", params: { screen: "My" } }],
+              });
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        },
+      },
+    ]);
   };
 
-  // 입력 값이 3개 중 하나라도 있으면 patch
-
-  // 삭제 이후 로직
-  const onDelete = () => {};
+  // 삭제 버튼 로직
+  const onDelete = () => {
+    Alert.alert("리뷰 삭제", "리뷰를 삭제하시겠습니꺼?", [
+      { text: "취소", style: "destructive" },
+      {
+        text: "삭제",
+        onPress: async () => {
+          try {
+            await removeReview(review.id);
+            if (from === "Detail") {
+              navigation.navigate("Detail", { movieId: review.movieId });
+            } else if (from === "My") {
+              navigation.navigate("Tabs", { screen: "My" });
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        },
+      },
+    ]);
+  };
 
   // 별점 로직
-  const getRatings = () => {
+  const getRatings = (ratings) => {
     setRatings(ratings);
   };
 
@@ -43,7 +139,7 @@ const ReviewEdit = ({
   return (
     <Container>
       <EditButton
-        disabled={!newTitle && !newContent && !ratings}
+        // disabled={!newTitle && !newContent && !ratings}
         onPress={onEditDone}
         style={{ borderColor: isDark ? WHITE_COLOR : DARK_COLOR }}
       >
